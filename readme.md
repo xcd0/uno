@@ -7,7 +7,13 @@
 - コマンドラインからUNOを遊びたい。
 	- 操作も単純なためそんなに難しくないと思われる。
 	- いい感じのCUIを作るのはそこそこ大変。
-		- https://github.com/mum4k/termdash が良さそう。
+		- https://github.com/mum4k/termdash
+		- https://github.com/gdamore/tcell
+			- fzfはこれ。
+		- https://github.com/rivo/tview/
+			- GitHub CLIはこれ。
+			- https://github.com/merlinfuchs/blimp
+			- https://github.com/gusti-andika/card-domino
 	- 最小UIといい感じのTUIを両方作る。
 - スマホからも遊べたら尚良し。
 	- 公式アプリは、ギャンブル性が強い。ポイントが無くなったら課金が必要になる。課金誘導が強い。そのため安心して長時間遊びにくい。

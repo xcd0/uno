@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	_ "github.com/rivo/tview"
 	"github.com/xcd0/uno/client"
 	"github.com/xcd0/uno/core"
 	"github.com/xcd0/uno/server"
@@ -37,7 +38,7 @@ func Run(args *Args) {
 	// TODO: 実装
 	// とりあえず公式
 	rule := (&core.UnoRule{}).Init()
-	rule.SetRule(core.UnoRuleList[0])
+	rule.SetRule(core.UnoRuleList[0].Name)
 
 	state := core.NewState(
 		args.PlayerNames,
@@ -48,7 +49,10 @@ func Run(args *Args) {
 	state.ShuffleDeck()
 	state.DealHands()
 
-	if true {
+	if !true {
+		// TUIクライアントとりあえず実装。
+		client.Tui()
+	} else if !true {
 		// とりあえず実装。
 		GameStart(state)
 		return
@@ -65,7 +69,7 @@ func Run(args *Args) {
 
 		switch {
 		case args.ArgsServer != nil: // サーバーモードとして起動する。
-			go server.UnoServer(setting.Port, rule)
+			server.UnoServer(setting.Port, rule)
 		case args.ArgsClient != nil: // クライアントモードとして起動する。
 			client.UnoClient(setting.Port)
 		case args.ArgsServerClient != nil: // サーバーとクライアント同時に起動する。

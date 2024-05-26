@@ -92,9 +92,15 @@ func ArgParse() *Args {
 	}
 
 	// 引数として必須な何れかが欠けている場合ヘルプを出力して終了する。
-	if args.Version == false && args.VersionSub == nil && //
-		args.ConvertToJson == nil && // args.Readme == false && //
-		args.ArgsProto == nil && //
+	if true && //
+		args.ArgsProto == nil &&
+		args.ArgsServer == nil &&
+		args.ArgsClient == nil &&
+		args.ArgsServerClient == nil &&
+		args.ArgsSolo == nil &&
+		args.CreateEmptyHjson == nil &&
+		args.ConvertToJson == nil &&
+		// args.Readme == false &&
 		true {
 		ShowHelp() // go-argsの生成するヘルプ文字列を取得して出力する。
 	}
@@ -104,14 +110,14 @@ func ArgParse() *Args {
 func ReadSetting(args *Args, s *core.Setting) *core.Setting {
 	tmp := &core.Setting{}
 	//log.Printf("setting : %v", args.SettingPath)
-	b, err := os.ReadFile(args.SettingPath)
-	if err != nil {
-		panic(errors.Errorf("%v", err))
+	if b, err := os.ReadFile(args.SettingPath); err == nil {
+		// 設定ファイルがある。
+		if err := hjson.Unmarshal(b, tmp); err != nil {
+			// 設定ファイルの形式が正しくない。
+			log.Printf("設定ファイルの形式が不正です。")
+			panic(errors.Errorf("%v", err))
+		}
 	}
-	if err := hjson.Unmarshal(b, tmp); err != nil {
-		panic(errors.Errorf("%v", err))
-	}
-	//tmp.DstTmp = filepath.ToSlash(filepath.Join(GetCurrentDir(), "tmp"))
 	s = tmp
 	s.Print(args.SettingPath)
 	return s

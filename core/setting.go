@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"unicode"
 
@@ -13,10 +12,7 @@ import (
 )
 
 type Setting struct {
-	LogPath     string             `json:"log"          comment:"ログファイル出力先を指定する。この指定がないときログ出力しない。"`
-	Silent      bool               `json:"quiet"        comment:"標準出力と標準エラー出力に出力しない。"`
-	RuleToApply string             `json:"rule"         comment:"適用するルール。"`
-	CustomRules map[string]UnoRule `json:"custom-rules" comment:"ユーザーがルールをカスタマイズできる。"`
+	// RuleToApply に指定できる文字列
 	// "official"                      : 旧公式ルール。112枚。シャッフルワイルドなし。(ホワイトワイルドは未実装。)
 	// "official_new"                  : 新公式ルール。シャッフルワイルドあり。(ホワイトワイルドは未実装。)
 	//                                 :   - シャッフルワイルドカードの追加枚数
@@ -58,7 +54,11 @@ type Setting struct {
 	//                                 :   - 同時出しルールが許可されている状態で、UNOコールなしで上がることを許可
 	// "custom1"                       : ユーザーが好きにカスタマイズできるルール。
 	// "custom2"                       : ユーザーが好きにカスタマイズできるルール。追加してもよい。
-	Port int `json:"port" comment:"ポート番号"`
+	RuleToApply string  `json:"rule"         comment:"適用するルール。"default:"official_new"`
+	CustomRules UnoRule `json:"custom-rules" comment:"ユーザーがルールをカスタマイズできる。"`
+	Port        int     `json:"port"         comment:"サーバーが使用するポート番号" default:"5000"`
+	LogPath     string  `json:"log"          comment:"ログファイル出力先を指定する。この指定がないときログ出力しない。" default:""`
+	Silent      bool    `json:"quiet"        comment:"標準出力と標準エラー出力に出力しない。" default:"false"`
 }
 
 // 空の設定ファイルを生成する。
@@ -67,10 +67,11 @@ func CreateEmptyHjson() string {
 	var sb string
 	// 空の設定ファイルを生成する。
 	// 空の構造体から、jsonを生成し、hjsonに変換する。
-	s := Setting{}
+	s := NewSetting()
+	s.CustomRules.SetRule("official_new")
 	if !true {
 		// hjsonはOrderedMapSSをMarshalできないのでjsonとしてMarshalしてHjsonに変換する。
-		jsonData, err := json.Marshal(s)
+		jsonData, err := json.Marshal(*s)
 		dst := &bytes.Buffer{}
 		if err := json.Compact(dst, jsonData); err != nil {
 			panic(err)
@@ -82,7 +83,7 @@ func CreateEmptyHjson() string {
 		}
 		sb = string(b)
 	} else {
-		b, err := hjson.Marshal(s)
+		b, err := hjson.Marshal(*s)
 		if err != nil {
 			panic(errors.Errorf("%v", err))
 		}
@@ -99,7 +100,7 @@ func CreateEmptyHjson() string {
 	sb = sb[2:len(sb)-2] + "\n" // 最初と最後の{}を削除する。
 	sb = RemoveEmptyLines(sb)
 
-	sb = fmt.Sprint(`##################################################################################################################################
+	sb = fmt.Sprintf(`##################################################################################################################################
 #
 # 設定ファイルの雛形。
 #
@@ -125,16 +126,45 @@ func CreateEmptyHjson() string {
 ##################################################################################################################################
 
 %v
-
 `, SettingFileName, sb)
 	sb = IndentOutermostBraces(sb)
-	log.Printf(sb)
+
+	sb += `
+##################################################################################################################################
+## "rule" で指定できるルールと説明。
+#`
+	// ルール一覧を出力する。
+	rules := strings.Split(UnoRuleList.Print(), "\n")
+	for _, r := range rules {
+		sb += fmt.Sprintf("\n# %v", r)
+	}
+	/*
+			// カスタマイズできるルール一覧。
+			sb += `
+		##################################################################################################################################
+		# "custom-rules" で指定できるルールと説明。
+		#`
+			rules = strings.Split(UnoRule{}.PrintForComment(), "\n")
+			for _, r := range rules {
+				sb += fmt.Sprintf("\n# %v", r)
+			}
+	*/
+	sb += `
+##################################################################################################################################
+`
+
+	//log.Printf(sb)
 	WriteText(&p, &sb)
 	return sb
 }
 
 func NewSetting() *Setting {
-	return &Setting{}
+	return &Setting{
+		LogPath:     "",
+		Silent:      false,
+		RuleToApply: "official_new",
+		Port:        5000,
+	}
 }
 
 func (s *Setting) Print(setting_path string) string {
