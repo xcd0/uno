@@ -1,4 +1,4 @@
-module uno
+module github.com/xcd0/uno
 
 go 1.22
 

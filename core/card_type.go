@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"log"
@@ -38,9 +38,8 @@ func (ci *CardInfo) AddCardType(card Card, num int) {
 	ci.CardTypeCount[card.Name] = num
 }
 func (ci *CardInfo) AddNumberOfCard(name string, num int) {
-	if id := ci.ID(name); id >= 0 {
-		log.Print("name", name)
-		panic(errors.Errorf("%v", "既存")) // すでにあったらエラー
+	if id := ci.ID(name); id < 0 {
+		panic(errors.Errorf("%v", "バグ")) // 無かったらエラー
 	}
 	ci.CardTypeCount[name] += num
 }

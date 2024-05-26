@@ -1,11 +1,12 @@
-package main
+package core
 
 import (
 	"log"
-	"math/rand"
 
 	"github.com/pkg/errors"
 )
+
+/*
 
 // カードを引く。
 func DealCards(player_id int, deal_num int, state *State) bool {
@@ -39,7 +40,7 @@ func DealCards(player_id int, deal_num int, state *State) bool {
 		if len(state.Deck) == 0 && len(state.Discard) <= 1 {
 			// 山札も捨て札もない。
 			// 引けないので引かないというのもありかなと思われる。
-			if developing && debug {
+			if Developing && Debug {
 				log.Printf("Deck: %v", PrintCards(state.Deck))
 				log.Printf("Disc: %v", PrintCards(state.Discard))
 				log.Printf("Hand: %v", PrintCards(*state.Hand()))
@@ -53,8 +54,66 @@ func DealCards(player_id int, deal_num int, state *State) bool {
 			panic(errors.Errorf("%v", "山札も捨て札もない。全てのカードが手札にある???"))
 		}
 	}
-	if developing && debug {
+	if Developing && Debug {
 		log.Printf("Dealed Cards : %#v", PrintCards(state.Hands[player_id]))
 	}
 	return true
+}*/
+
+func DealCards(player_id int, deal_num int, state *State) bool {
+	// deal_num回state.Deckからhandにカードを引く。
+	for j := 0; j < deal_num; j++ {
+		// 山札からカードを1枚引く。
+		if !CheckDeck(state) { // 山札が弾ける状態かチェック
+			// 引けない状態なら引かない。
+			continue
+		}
+		card, ok := pop(&state.Deck)
+		if !ok {
+			panic(errors.Errorf("%v", "バグ")) // 謎。バグ。
+		}
+		push(&state.Hands[player_id], card)
+	}
+	if Developing && Debug {
+		log.Printf("Dealed Cards : %#v", PrintCards(state.Hands[player_id]))
+	}
+	return true
+}
+
+func CheckDeck(state *State) bool {
+	// 山札がない場合に、捨て札から場にシャッフルして戻す。
+	ShuffleDiscardPileIntoDeck(state)
+
+	if len(state.Deck) == 0 && len(state.Discard) <= 1 {
+		// 山札も捨て札もない。
+		// 引けないので引かないというのもありかなと思われる。
+		if Developing && Debug {
+			log.Printf("Deck: %v", PrintCards(state.Deck))
+			log.Printf("Disc: %v", PrintCards(state.Discard))
+			log.Printf("Hand: %v", PrintCards(*state.Hand()))
+		}
+		return false
+	}
+	return true
+}
+
+// 山札がない場合に、捨て札から場にシャッフルして戻す。
+func ShuffleDiscardPileIntoDeck(state *State) {
+	if len(state.Deck) == 0 && len(state.Discard) <= 1 {
+		// 山札も捨て札もない。場合は何もしない。
+		return
+	}
+	if len(state.Deck) == 0 && len(state.Discard) > 1 {
+		// 捨て札から場にシャッフルして戻す。
+		last_card, ok := pop(&state.Discard) // 捨て札の最も新しいカードを保持する。
+		if !ok {
+			// 来ないはず。
+			panic(errors.Errorf("%v", "バグ"))
+			return
+		}
+		ShuffleCards(state.Discard) // 捨て札をシャッフル。
+		CryptoRandShuffle(state.Discard)
+		state.Deck = append(state.Deck, state.Discard...) // 山札にする。
+		state.Discard = []Card{last_card}                 // 捨て札に保持しておいた最後の捨て札を戻す。
+	}
 }

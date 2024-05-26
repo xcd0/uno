@@ -3,19 +3,19 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/alexflint/go-arg"
+	"github.com/hjson/hjson-go/v4"
 	"github.com/pkg/errors"
-)
-
-const (
-	setting_file_name = "uno_setting.hjson" // 設定ファイル名。
+	"github.com/xcd0/uno/core"
 )
 
 type Args struct {
+	ArgsProto        *ArgsServer           `arg:"subcommand:proto"      help:"簡易実装。"`
 	ArgsServer       *ArgsServer           `arg:"subcommand:server"     help:"サーバーモードとして起動する。"`
 	ArgsClient       *ArgsClient           `arg:"subcommand:client"     help:"クライアントモードとして起動する。"`
 	ArgsServerClient *ArgsServerClient     `arg:"subcommand:both"       help:"サーバーとクライアント同時に起動する。"`
@@ -33,6 +33,7 @@ type Args struct {
 }
 
 func (Args) Description() string {
+	// TODO: 実装
 	return fmt.Sprintf(`%v version %v.%v
 
 	Description:
@@ -53,11 +54,11 @@ func ShowHelp() {
 }
 
 // 引数解析
-func ArgParse() (*Args, *Setting) {
+func ArgParse() *Args {
 	log.SetFlags(log.Ltime | log.Lshortfile) // ログの出力書式を設定する
-	ThisProgramPath = AbsPath(os.Args[0])
+	ThisProgramPath = core.AbsPath(os.Args[0])
 
-	args := &Args{SettingPath: fmt.Sprintf("./%v", setting_file_name)}
+	args := &Args{SettingPath: fmt.Sprintf("./%v", core.SettingFileName)}
 
 	{
 		var err error
@@ -90,20 +91,54 @@ func ArgParse() (*Args, *Setting) {
 		os.Exit(1)
 	}
 
-	s := ReadSetting(args, NewSetting(args))
-	loggingSettings(args, s)
-	if args.CreateEmptyHjson != nil {
-		CreateEmptyHjson(args)
-		os.Exit(0)
-	}
-
 	// 引数として必須な何れかが欠けている場合ヘルプを出力して終了する。
 	if args.Version == false && args.VersionSub == nil && //
 		args.ConvertToJson == nil && // args.Readme == false && //
+		args.ArgsProto == nil && //
 		true {
 		ShowHelp() // go-argsの生成するヘルプ文字列を取得して出力する。
 	}
-	return args, s
+	return args
+}
+
+func ReadSetting(args *Args, s *core.Setting) *core.Setting {
+	tmp := &core.Setting{}
+	//log.Printf("setting : %v", args.SettingPath)
+	b, err := os.ReadFile(args.SettingPath)
+	if err != nil {
+		panic(errors.Errorf("%v", err))
+	}
+	if err := hjson.Unmarshal(b, tmp); err != nil {
+		panic(errors.Errorf("%v", err))
+	}
+	//tmp.DstTmp = filepath.ToSlash(filepath.Join(GetCurrentDir(), "tmp"))
+	s = tmp
+	s.Print(args.SettingPath)
+	return s
+}
+
+func loggingSettings(logpath string, s *core.Setting) {
+	logpath = func() string {
+		if len(logpath) != 0 {
+			return logpath
+		} else if s != nil && len(s.LogPath) != 0 {
+			return s.LogPath
+		}
+		return ""
+		//return filepath.ToSlash(filepath.Join(GetCurrentDir(), fmt.Sprintf("%v.log", getFileNameWithoutExt(filepath.Base(os.Args[0])))))
+	}()
+	if len(logpath) != 0 {
+		//log.Printf("log filepath : %v", logpath)
+		logfile, err := os.OpenFile(logpath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			panic(errors.Errorf("%v", err))
+		}
+		wrapperStdout, wrapperStderr = io.MultiWriter(os.Stdout, logfile), io.MultiWriter(os.Stderr, logfile) // 出力をログファイル、標準出力、標準エラー出力に出力する。
+	} else {
+		wrapperStdout, wrapperStderr = os.Stdout, os.Stderr // 出力を標準出力、標準エラー出力に出力する。
+	}
+	log.SetOutput(wrapperStdout)             // logの出力先
+	log.SetFlags(log.Ltime | log.Lshortfile) // ログの出力書式を設定する
 }
 
 func (args *Args) Print() {

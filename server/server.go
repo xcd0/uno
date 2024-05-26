@@ -1,10 +1,12 @@
-package main
+package server
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/xcd0/uno/core"
 )
 
 /*
@@ -36,7 +38,7 @@ import (
 		- 追々。
 */
 
-func UnoServer(port int, rule UnoRule) {
+func UnoServer(port int, rule core.UnoRule) {
 
 	// handleCardsはすべてのカードのリストを送信するためのGETリクエストを処理します。
 	// ruleを引数渡しできないため、クロージャとしてハンドラーを定義する。
@@ -45,7 +47,7 @@ func UnoServer(port int, rule UnoRule) {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
 		}
-		cards := (&JsonCardInfo{}).Init(rule)
+		cards := (&core.JsonCardInfo{}).Init(rule)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(cards)
 	}
@@ -59,9 +61,9 @@ func UnoServer(port int, rule UnoRule) {
 	}
 }
 
-func GenerateJsonGameStateForNewTurn() JsonGameState {
+func GenerateJsonGameStateForNewTurn() core.JsonGameState {
 	// 未実装
-	return JsonGameState{
+	return core.JsonGameState{
 		CurrentCard:      1,
 		DrawnCardID:      []int{102, 205},
 		Hand:             []int{101, 202, 303},
@@ -94,7 +96,7 @@ func HandleClientPlay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var clientPlay JsonClientPlay
+	var clientPlay core.JsonClientPlay
 	err := json.NewDecoder(r.Body).Decode(&clientPlay)
 	if err != nil {
 		http.Error(w, "Error reading request", http.StatusBadRequest)

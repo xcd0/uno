@@ -1,4 +1,4 @@
-package main
+package core
 
 type JsonGameState struct {
 	CurrentCard      int      `json:"current_card"`             // 場に出ているカードのID。場に最後に捨てられたカードのID。
@@ -10,17 +10,6 @@ type JsonGameState struct {
 	OtherHandCounts  []int    `json:"other_player_hand_counts"` // 他プレイヤーの手札枚数のリスト。
 	UnoCalled        []bool   `json:"uno_called"`               // 他プレイヤーがUNO!とコールしたかどうかリスト。
 	Direction        int      `json:"direction"`                // 順番の回る方向。1の時他プレーヤーのリストの先頭、-1の時末尾のプレーヤーが次になる。
-}
-
-type JsonClientPlay struct {
-	Discard           []int `json:"discard_id"`            // 捨てるカードを指定する。空の時、初回に限り山札からカードを1枚引いて再度カードを選びなおす事ができる。
-	CallUno           bool  `json:"call_uno"`              // 基本falseを返す。自分がUNO!とコールするときtrueにする。
-	CallUnoOnPlayerID int   `json:"call_uno_on_player_id"` // 基本-1を返す。他人がUNO!とコールしていない時指摘する場合にそのプレーヤーIDを指定する。
-}
-
-// 全ての使用するカードの情報をクライアントがサーバーに問い合わせることができる。
-type JsonCardInfo struct {
-	CardAll []Card `json:"card_info"`
 }
 
 func (jgs *JsonGameState) Init(rule UnoRule, players []string, yourname string) JsonGameState {
@@ -48,6 +37,13 @@ func (jgs *JsonGameState) Init(rule UnoRule, players []string, yourname string) 
 	}
 	return *jgs
 }
+
+type JsonClientPlay struct {
+	Discard           []int `json:"discard_id"`            // 捨てるカードを指定する。空の時、初回に限り山札からカードを1枚引いて再度カードを選びなおす事ができる。
+	CallUno           bool  `json:"call_uno"`              // 基本falseを返す。自分がUNO!とコールするときtrueにする。
+	CallUnoOnPlayerID int   `json:"call_uno_on_player_id"` // 基本-1を返す。他人がUNO!とコールしていない時指摘する場合にそのプレーヤーIDを指定する。
+}
+
 func (jcp *JsonClientPlay) Init() JsonClientPlay {
 	*jcp = JsonClientPlay{
 		Discard:           make([]int, 0, 10), // []int `json:"discard_id"`            // 捨てるカードを指定する。空の時、初回に限り山札からカードを1枚引いて再度カードを選びなおす事ができる。
@@ -55,6 +51,11 @@ func (jcp *JsonClientPlay) Init() JsonClientPlay {
 		CallUnoOnPlayerID: -1,                 // int   `json:"call_uno_on_player_id"` // 基本-1を返す。他人がUNO!とコールしていない時指摘する場合にそのプレーヤーIDを指定する。
 	}
 	return *jcp
+}
+
+// 全ての使用するカードの情報をクライアントがサーバーに問い合わせることができる。
+type JsonCardInfo struct {
+	CardAll []Card `json:"card_info"`
 }
 
 func (jci *JsonCardInfo) Init(rule UnoRule) JsonCardInfo {

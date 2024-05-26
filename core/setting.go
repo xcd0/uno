@@ -1,11 +1,10 @@
-package main
+package core
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"unicode"
 
@@ -63,7 +62,7 @@ type Setting struct {
 }
 
 // 空の設定ファイルを生成する。
-func CreateEmptyHjson(args *Args) string {
+func CreateEmptyHjson() string {
 	p := "./uno_setting_empty.hjson"
 	var sb string
 	// 空の設定ファイルを生成する。
@@ -127,35 +126,18 @@ func CreateEmptyHjson(args *Args) string {
 
 %v
 
-`, setting_file_name, sb)
+`, SettingFileName, sb)
 	sb = IndentOutermostBraces(sb)
 	log.Printf(sb)
 	WriteText(&p, &sb)
 	return sb
 }
 
-func NewSetting(args *Args) *Setting {
-	os.RemoveAll(args.SettingPath)
+func NewSetting() *Setting {
 	return &Setting{}
 }
 
-func ReadSetting(args *Args, s *Setting) *Setting {
-	tmp := &Setting{}
-	//log.Printf("setting : %v", args.SettingPath)
-	b, err := os.ReadFile(args.SettingPath)
-	if err != nil {
-		panic(errors.Errorf("%v", err))
-	}
-	if err := hjson.Unmarshal(b, tmp); err != nil {
-		panic(errors.Errorf("%v", err))
-	}
-	//tmp.DstTmp = filepath.ToSlash(filepath.Join(GetCurrentDir(), "tmp"))
-	s = tmp
-	s.Print(args)
-	return s
-}
-
-func (s *Setting) Print(args *Args) string {
+func (s *Setting) Print(setting_path string) string {
 	if s == nil {
 		return "s is nil"
 	}
@@ -163,7 +145,7 @@ func (s *Setting) Print(args *Args) string {
 	setting hjson path       : %q
 	log                      : %q
 	`,
-		AbsPath(args.SettingPath),
+		AbsPath(setting_path),
 		s.LogPath,
 	)
 }

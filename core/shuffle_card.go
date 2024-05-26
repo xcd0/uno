@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	crypto_rand "crypto/rand"
@@ -11,7 +11,7 @@ func ShuffleCards(cards []Card) {
 	math_rand.Shuffle(len(cards), func(i, j int) {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
-	if developing && debug {
+	if Developing && Debug {
 		log.Printf("Shuffled Cards : len(cards): %v", len(cards))
 		if len(cards) == 0 {
 			return
@@ -44,7 +44,7 @@ func CryptoRandShuffle(cards []Card) {
 		// カードを交換
 		cards[i], cards[j] = cards[j], cards[i]
 	}
-	if developing && debug {
+	if Developing && Debug {
 		if len(cards) == 0 {
 			log.Printf("CryptoRandShuffle: len(cards): %v", len(cards))
 			return

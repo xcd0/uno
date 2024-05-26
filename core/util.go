@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"archive/zip"
@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -188,7 +188,7 @@ func CreateTmpDir() string {
 	// OSの一時ディレクトリを使用していたが、カレントディレクトリが別ドライブだとその後の処理が大変難しくなるので、
 	// カレントディレクトリ直下に作成することにする。
 	if false {
-		tempDir, err := ioutil.TempDir("", "extracted")
+		tempDir, err := os.MkdirTemp("", "extracted")
 		if err != nil {
 			panic(errors.Errorf("%v", err))
 		}
@@ -238,7 +238,7 @@ func ExtractEmbeddedFiles(files embed.FS) (string, error) {
 		if err != nil {
 			panic(errors.Errorf("%v", err))
 		}
-		err = ioutil.WriteFile(targetPath, data, d.Type().Perm())
+		err = os.WriteFile(targetPath, data, d.Type().Perm())
 		if err != nil {
 			panic(errors.Errorf("%v", err))
 		}
@@ -282,85 +282,6 @@ func ReadSettingHjson(path *string) *Setting {
 	//log.Printf("setting:\n%v", JsonFormat(j))
 	return &setting
 }
-
-// func Copy(old_file, new_file string, embedFileList *EmbedFileList) {
-// 	if true {
-// 		old_file = GetRelativePath(old_file)
-// 		new_file = GetRelativePath(new_file)
-//
-// 		cmd := exec.Command(embedFileList.BinBusybox, "cp", "-rf", old_file, new_file)
-// 		cmd.Stdout = os.Stdout
-// 		cmd.Stderr = os.Stderr
-// 		cmd.Run()
-// 	} else {
-//
-// 		old_file = GetRelativePath(old_file)
-// 		new_file = GetRelativePath(new_file)
-// 		if !IsDir(old_file) {
-// 			if !IsExist(new_file) {
-// 				//CreateDirectry(new_file)
-// 				//new_file = new_file + "/"
-// 			} else if !IsDir(new_file) {
-// 				//new_file = new_file + "/"
-// 			}
-// 		} else {
-// 		}
-// 		runCommandByArrayWithoutPanic(embedFileList.BinBusybox, "cp", "-rf", old_file, new_file)
-// 		return
-//
-// 		cmd := exec.Command("cp", "-rf", old_file, new_file)
-// 		cmd.Stdout = os.Stdout
-// 		cmd.Stderr = os.Stderr
-// 		cmd.Run()
-//
-// 		return
-//
-// 		oldFile, err := os.Open(old_file)
-// 		if err != nil {
-// 			fmt.Println(err)
-// 			panic(errors.Errorf("%v", err))
-// 		}
-// 		defer oldFile.Close()
-//
-// 		if IsDir(old_file) {
-// 			// oldがディレクトリの時
-// 			if IsExist(new_file) {
-// 				if IsDir(new_file) {
-// 					// 上書きする
-// 				} else {
-// 					// ファイルがあった
-// 					// エラー
-// 					panic(errors.Errorf("ディレクトリをコピー使用と試みましたが、既に同じ名前のファイルが存在しました。: %v", new_file))
-// 				}
-// 			} else {
-// 				CreateDirectry(new_file)
-// 				new_file = filepath.Join(new_file, filepath.Base(new_file))
-// 			}
-// 		} else {
-// 			// oldがディレクトリの時の時
-// 			if IsExist(new_file) {
-// 				if IsDir(new_file) {
-// 					// ディレクトリがあった
-// 					// エラー
-// 					panic(errors.Errorf("ディレクトリをコピー使用と試みましたが、既に同じ名前のファイルが存在しました。: %v", new_file))
-// 				} else {
-// 					// 上書きする
-// 				}
-// 			} else {
-// 				//CreateDirectry(new_file)
-// 			}
-// 		}
-//
-// 		newFile, err := os.Create(new_file)
-// 		if err != nil {
-// 			fmt.Println(err)
-// 			panic(errors.Errorf("%v", err))
-// 		}
-// 		defer newFile.Close()
-// 		io.Copy(newFile, oldFile)
-// 		log.Printf("cp %#v %#v", old_file, new_file)
-// 	}
-// }
 
 func StringJoin(in []string) *string {
 	var m2 = bytes.NewBuffer(make([]byte, 0, 100))
@@ -492,53 +413,6 @@ func runCommandOutputRealtimeWithTee(cmd *exec.Cmd, verbose bool, outputFile str
 
 	return stdout, stderr, exitCode, err
 }
-
-//// runCommandOutputTextWithoutPanicByArray はコマンドを実行し、その結果を文字列で返し、
-//// 出力を指定されたパスのファイルに保存します。
-//func runCommandOutputTextWithoutPanicByArray(output_path string, command string, args ...string) (string, error) {
-//	// コマンドを実行して結果を取得
-//	stdout, err := exec.Command(command, args...).CombinedOutput()
-//	output := string(stdout)
-//	if err != nil {
-//		return output, err
-//	}
-//
-//	// 出力をファイルに書き込む
-//	err = ioutil.WriteFile(output_path, stdout, 0644)
-//	if err != nil {
-//		return output, err
-//	}
-//
-//	return output, nil
-//}
-
-// func runCommandGetOutputWithoutPanicByArray(command string, args ...string) (string, error) {
-// 	stdout, err := exec.Command(command, args...).CombinedOutput()
-// 	return string(stdout), err
-// }
-
-func runCommandByArrayWithoutPanic(command string, args ...string) error {
-	//fmt.Printf("%v %v", command, args)
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = wrapperStdout
-	cmd.Stderr = wrapperStderr
-	return cmd.Run()
-}
-
-// // 1.外部コマンドを実行し、標準出力と標準エラーを印字し、エラーの場合はpanicする
-// // この関数では bash "./a b c.sh"のように空白のあるパスに対応できない。
-// func RunCommand(command string) {
-// 	//panic("")
-// 	//log.Printf("run command: %#v\n", command)
-// 	tokens := strings.Split(command, " ")
-// 	c := tokens[0]
-// 	args := tokens[1:]
-// 	err := runCommandByArrayWithoutPanic(c, args...)
-// 	if err != nil {
-// 		log.Printf("run command: %#v\n", command)
-// 		panic(errors.Errorf("%v", err))
-// 	}
-// }
 
 func GetRelativePath(targetPath string) string {
 	// カレントディレクトリを取得
@@ -701,4 +575,13 @@ func IndentOutermostBraces(input string) string {
 		}
 	}
 	return result.String()
+}
+
+// randomSign はランダムに1または-1を返す関数です。
+func RandomSign() int {
+	//rand.Seed(time.Now().UnixNano()) // 乱数生成器のシード設定
+	if rand.Intn(2) == 0 { // 0または1を生成し、0ならば-1を返す
+		return -1
+	}
+	return 1
 }

@@ -1,4 +1,4 @@
-package main
+package core
 
 import "log"
 
@@ -6,7 +6,7 @@ func GetCards(rule UnoRule) []Card {
 	ci := CardInfo{}
 	ci.Init()
 
-	if developing && debug {
+	if Developing && Debug {
 		log.Printf("%v", rule.Print())
 	}
 
