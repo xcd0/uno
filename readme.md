@@ -115,8 +115,9 @@ APIエンドポイント                | HTTPメソッド | 説明
 `/api/players/{playerId}/stats`  | GET          | プレイヤーの過去のゲーム成績や勝率などの統計情報を取得します。
 `/api/game/history/{sessionId}`  | GET          | 指定されたゲームセッションの履歴情報を取得します。
 `/api/game/replay/{sessionId}`   | GET          | ゲームのリプレイデータを提供し、ユーザーが過去のゲームをレビューできるようにします。
-`/api/events/subscribe`          | WebSocket    | プレイヤーがリアルタイムのゲームイベントを購読するためのWebSocket接続を提供します。
 `/api/notifications`             | POST         | ゲームに関連する特定の通知をユーザーに送信します。
+`/api/ws/{playerId}`             | WebSocket    | 参加中のゲームのリアルタイムイベント用webソケット。
+`/api/ws/subscribe/{playerId}`   | WebSocket    | プレイヤーがリアルタイムのゲームイベントを購読するためのWebSocket接続を提供します。
 
 
 

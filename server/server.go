@@ -250,7 +250,8 @@ func UnoServer(state *core.State) {
 	router.HandleFunc("/api/game/{sessionId}/state", HandleGameState).Methods("GET")  // 指定されたセッションIDのゲーム状態を取得します。現在の状態JsonGameStateをクライアントに送信するためのGETリクエストを処理します。
 	router.HandleFunc("/api/game/{sessionId}/play", HandleClientPlay).Methods("POST") // 指定されたセッションIDのゲームにおいて、プレーヤーのアクションを処理します。クライアントがJsonClientPlayを送信するPOSTリクエストを処理します。
 	router.HandleFunc("/api/game/{sessionId}/cards", HandleCards).Methods("GET")      // ゲームで使用されるすべてのカードの詳細情報を取得します。すべてのカードのリストを送信するためのGETリクエストを処理します。
-	router.HandleFunc("/ws/{playerId}", HandleWebSocket)                              // websoket用。
+	router.HandleFunc("/api/ws/{playerId}", HandleWebSocket)                          // 参加中のゲームのリアルタイムイベント用webソケット。
+	router.HandleFunc("/api/ws/subscribe/{playerId}", HandleWebSocket)                // プレイヤーがリアルタイムのゲームイベントを購読するためのWebSocket接続を提供します。
 
 	// http.HandleFunc("/api/{sessionId}/game/new", HandleNewGame)     // 新しいゲームを開始し、セッションIDを発行します。
 	// http.HandleFunc("/api/{sessionId}/game/state", HandleGameState) // 指定されたセッションIDのゲーム状態を取得します。現在の状態JsonGameStateをクライアントに送信するためのGETリクエストを処理します。
