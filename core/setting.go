@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"unicode"
 
@@ -71,7 +73,7 @@ func CreateEmptyHjson() string {
 	s.CustomRules.SetRule("official_new")
 	if !true {
 		// hjsonはOrderedMapSSをMarshalできないのでjsonとしてMarshalしてHjsonに変換する。
-		jsonData, err := json.Marshal(*s)
+		jsonData, err := json.Marshal(s)
 		dst := &bytes.Buffer{}
 		if err := json.Compact(dst, jsonData); err != nil {
 			panic(err)
@@ -83,7 +85,7 @@ func CreateEmptyHjson() string {
 		}
 		sb = string(b)
 	} else {
-		b, err := hjson.Marshal(*s)
+		b, err := hjson.Marshal(s)
 		if err != nil {
 			panic(errors.Errorf("%v", err))
 		}
@@ -158,8 +160,8 @@ func CreateEmptyHjson() string {
 	return sb
 }
 
-func NewSetting() *Setting {
-	return &Setting{
+func NewSetting() Setting {
+	return Setting{
 		LogPath:     "",
 		Silent:      false,
 		RuleToApply: "official_new",
@@ -167,15 +169,55 @@ func NewSetting() *Setting {
 	}
 }
 
-func (s *Setting) Print(setting_path string) string {
+func (s *Setting) Print() string {
 	if s == nil {
 		return "s is nil"
 	}
 	return fmt.Sprintf(`
-	setting hjson path       : %q
-	log                      : %q
+	logpath                  : %v
+	silent                   : %v
+	rule                     : %v
+	port                     : %v
 	`,
-		AbsPath(setting_path),
 		s.LogPath,
+		s.Silent,
+		s.RuleToApply,
+		s.Port,
 	)
+}
+
+func ReadSetting(setting_path string, s Setting) Setting {
+	if b, err := os.ReadFile(setting_path); err == nil {
+		// 設定ファイルがある。
+		if err := hjson.Unmarshal(b, s); err != nil {
+			// 設定ファイルの形式が正しくない。
+			log.Printf("設定ファイルの形式が不正です。")
+			panic(errors.Errorf("%v", err))
+		}
+	}
+	s.Print()
+	return s
+}
+
+func ReadSettingHjson(path *string) *Setting {
+
+	hjsonStr := GetText(path)
+	b := []byte(*hjsonStr)
+	//*hjsonStr = fmt.Sprintf("{%v}", *hjsonStr)
+	setting := UnmarshalHjson(b)
+	//log.Printf("%v", setting)
+	var data map[string]interface{}
+	if err := hjson.Unmarshal(b, &data); err != nil {
+		log.Printf("%v", err)
+		panic(errors.Errorf("%v", err))
+		//} else {
+		/*
+			for k, v := range data {
+				log.Printf("%v:%v", k, v)
+			}
+		*/
+	}
+	//j, _ := json.Marshal([]Setting{setting})
+	//log.Printf("setting:\n%v", JsonFormat(j))
+	return &setting
 }

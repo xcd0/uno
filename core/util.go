@@ -260,29 +260,6 @@ func UnmarshalHjson(b []byte) Setting {
 	return setting
 }
 
-func ReadSettingHjson(path *string) *Setting {
-
-	hjsonStr := GetText(path)
-	b := []byte(*hjsonStr)
-	//*hjsonStr = fmt.Sprintf("{%v}", *hjsonStr)
-	setting := UnmarshalHjson(b)
-	//log.Printf("%v", setting)
-	var data map[string]interface{}
-	if err := hjson.Unmarshal(b, &data); err != nil {
-		log.Printf("%v", err)
-		panic(errors.Errorf("%v", err))
-		//} else {
-		/*
-			for k, v := range data {
-				log.Printf("%v:%v", k, v)
-			}
-		*/
-	}
-	//j, _ := json.Marshal([]Setting{setting})
-	//log.Printf("setting:\n%v", JsonFormat(j))
-	return &setting
-}
-
 func StringJoin(in []string) *string {
 	var m2 = bytes.NewBuffer(make([]byte, 0, 100))
 	for _, v := range in {

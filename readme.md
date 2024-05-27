@@ -99,6 +99,27 @@
 	- [ ] 商用品質のスケーラビリティのあるインフラ構築。
 	- [ ] クライアントの商用品質のリッチなGUI実装。
 
+## API
+
+
+予定。
+
+APIエンドポイント                | HTTPメソッド | 説明
+---------------------------------|--------------|------------------------------------------------------------
+`/api/game/new`                  | POST         | 新しいゲームを開始し、セッションIDを発行します。
+`/api/game/{sessionId}/state`    | GET          | 指定されたセッションIDのゲーム状態を取得します。
+`/api/game/{sessionId}/play`     | POST         | 指定されたセッションIDのゲームにおいて、プレーヤーのアクションを処理します。
+`/api/game/{sessionId}/cards`    | GET          | ゲームで使用されるすべてのカードの詳細情報を取得します。
+`/api/players/register`          | POST         | 新しいプレイヤーを登録します。
+`/api/players/{playerId}`        | GET          | 指定されたプレイヤーIDに関する詳細情報を取得します。
+`/api/players/{playerId}/stats`  | GET          | プレイヤーの過去のゲーム成績や勝率などの統計情報を取得します。
+`/api/game/history/{sessionId}`  | GET          | 指定されたゲームセッションの履歴情報を取得します。
+`/api/game/replay/{sessionId}`   | GET          | ゲームのリプレイデータを提供し、ユーザーが過去のゲームをレビューできるようにします。
+`/api/events/subscribe`          | WebSocket    | プレイヤーがリアルタイムのゲームイベントを購読するためのWebSocket接続を提供します。
+`/api/notifications`             | POST         | ゲームに関連する特定の通知をユーザーに送信します。
+
+
+
 ## 実装予定
 
 ざっと書いたものをchatgptにまとめてもらった。

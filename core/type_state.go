@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// サーバーが保持するゲームの情報。参加者には見せない。
 type State struct {
 	Color          int      // -1の時任意
 	Number         int      // -1の時任意
@@ -18,11 +19,14 @@ type State struct {
 	Players        []string // 参加者
 	NPCs           []bool   // NPCかどうか
 	Hands          [][]Card // 手札
+	DrawnCardID    []int    // 新規に引いたカードのID。draw2等で複数引いている場合がある。
 	Deck           []Card   // 山札
 	Discard        []Card   // 捨て札
 	LastCard       *Card    // 場札 nilの時は直前の人がスキップしている。nil出ないときDiscardの末尾。
 	SkipCount      int      // 全員手札が出せない謎状況になったら引き分けにする。
 	Rule           UnoRule  // 使用中のルール
+	Setting        *Setting // サーバーの設定
+	UnoCalled      []bool   // 他プレイヤーがUNO!とコールしたかどうかリスト。
 }
 
 func NewState(players []string, numberOfPlayers int, cards []Card, rule *UnoRule) *State {
@@ -32,7 +36,7 @@ func NewState(players []string, numberOfPlayers int, cards []Card, rule *UnoRule
 func (state State) Init(players []string, numberOfPlayers int, cards []Card, rule *UnoRule) *State {
 
 	if len(players) == 0 {
-		players = []string{"You", "P1", "P2", "P3"}
+		players = []string{"You", "NPC1", "NPC2", "NPC3"}
 	}
 	npcs := make([]bool, 0, 20)
 	if numberOfPlayers != 0 {
@@ -68,13 +72,15 @@ func (state State) Init(players []string, numberOfPlayers int, cards []Card, rul
 		LastCard:  nil,                          // 場札 nilの時は直前の人がスキップしている。nil出ないときDiscardの末尾。
 		SkipCount: 0,                            // 全員手札が出せない謎状況になったら引き分けにする。
 		Rule:      *rule,                        // 使用中のルール
+		Setting:   nil,                          // サーバーの設定
+		UnoCalled: make([]bool, len(players)),   // 他プレイヤーがUNO!とコールしたかどうかリスト。
 	}
 
 	return &state
 }
 func (s *State) InitGameState() *State {
 	s.ShuffleDeck()
-	s.DealHands()
+	s.DealHandsOnInit()
 	return s
 }
 func (s *State) ShuffleDeck() *State {
@@ -83,7 +89,7 @@ func (s *State) ShuffleDeck() *State {
 	CryptoRandShuffle(s.Deck)
 	return s
 }
-func (s *State) DealHands() *State {
+func (s *State) DealHandsOnInit() *State {
 
 	if s.Rule.EnableAlgoriStart { // R.algori.O1 ALGORIルールの開始方法を使用する。
 		// - 順番(回る方向)と最初のプレーヤーはランダム。
@@ -309,10 +315,39 @@ func (s *State) Update() {
 func (s *State) Name() string {
 	return s.Players[s.NowPlayerIndex]
 }
+func (s *State) NextPlayerID() int {
+	return ((s.NowPlayerIndex + s.Turn) + len(s.Players)) % len(s.Players)
+}
 func (s *State) NextName() string {
-	tmp := ((s.NowPlayerIndex + s.Turn) + len(s.Players)) % len(s.Players)
-	return s.Players[tmp]
+	return s.Players[s.NextPlayerID()]
+}
+func (s *State) OtherPlayerNames() []string {
+	o := []string{}
+	for _, n := range s.Players {
+		if n != s.Name() {
+			o = append(o, n)
+		}
+	}
+	return o
+}
+func (s *State) OtherHandCounts() []int {
+	o := []int{}
+
+	for i := 0; i < len(s.Players); i++ {
+		if i != s.NowPlayerIndex {
+			o = append(o, len(s.Hands[i]))
+		}
+	}
+	return o
 }
 func (s *State) Hand() *[]Card {
 	return &s.Hands[s.NowPlayerIndex]
+}
+func (s *State) HandID() []int {
+	hs := s.Hand()
+	ret := []int{}
+	for _, h := range *hs {
+		ret = append(ret, h.Type)
+	}
+	return ret
 }

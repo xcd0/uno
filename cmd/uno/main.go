@@ -47,7 +47,7 @@ func Run(args *Args) {
 		&rule,
 	)
 	state.ShuffleDeck()
-	state.DealHands()
+	state.DealHandsOnInit()
 
 	if !true {
 		// TUIクライアントとりあえず実装。
@@ -60,24 +60,27 @@ func Run(args *Args) {
 
 		// サーバーとクライアントを分けた実装。
 
-		setting := ReadSetting(args, core.NewSetting())
-		loggingSettings(args.LogPath, setting)
-		if args.CreateEmptyHjson != nil {
-			core.CreateEmptyHjson()
-			os.Exit(0)
+		{
+			setting := core.ReadSetting(args.SettingPath, core.NewSetting())
+			loggingSettings(args.LogPath, &setting)
+			if args.CreateEmptyHjson != nil {
+				core.CreateEmptyHjson()
+				os.Exit(0)
+			}
+			state.Setting = &setting
 		}
 
 		switch {
 		case args.ArgsServer != nil: // サーバーモードとして起動する。
-			server.UnoServer(setting.Port, rule)
+			server.UnoServer(state)
 		case args.ArgsClient != nil: // クライアントモードとして起動する。
-			client.UnoClient(setting.Port)
+			client.UnoClient(state.Setting.Port)
 		case args.ArgsServerClient != nil: // サーバーとクライアント同時に起動する。
-			go server.UnoServer(setting.Port, rule)
-			client.UnoClient(setting.Port)
+			go server.UnoServer(state)
+			client.UnoClient(state.Setting.Port)
 		case args.ArgsSolo != nil: // 一人プレイモードで起動する。
-			go server.UnoServer(setting.Port, rule)
-			client.UnoClient(setting.Port)
+			go server.UnoServer(state)
+			client.UnoClient(state.Setting.Port)
 		case args.CreateEmptyHjson != nil: // 空の設定ファイルを生成する。
 		// TODO: 実装
 		case args.ConvertToJson != nil: // 設定ファイルをjsonに変換する。

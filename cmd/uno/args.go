@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/alexflint/go-arg"
-	"github.com/hjson/hjson-go/v4"
 	"github.com/pkg/errors"
 	"github.com/xcd0/uno/core"
 )
@@ -25,7 +24,7 @@ type Args struct {
 	VersionSub       *ArgsVersion          `arg:"subcommand:version"    help:"バージョン番号を出力する。-vと同じ。" `
 
 	PlayerNames     []string `arg:"-p,--player-names"     help:"参加者の名前。"`
-	NumberOfPlayers int      `arg:"-n,--number-of-player" help:"参加者全体の数。参加者の名前の数が少ない場合NPCが入る。参加者の名前の数が多い場合そちらに合わせる。"`
+	NumberOfPlayers int      `arg:"-n,--number-of-player" help:"参加者全体の数。参加者の名前の数が少ない場合NPCが入る。参加者の名前の数が多い場合そちらに合わせる。" default:"4"`
 	SettingPath     string   `arg:"-s,--setting"          help:"使用したい設定ファイルパス指定。指定がなければ./uno_setting.hjsonを使用する。" placeholder:"FILE"`
 	LogPath         string   `arg:"-l,--logfile"          help:"ログファイル出力先を指定する。設定ファイルで指定されておらず、この指定がないときログ出力しない。" placeholder:"FILE"`
 	Version         bool     `arg:"-v,--version"          help:"バージョン番号を出力する。サブコマンドversionと同じ。" `
@@ -58,11 +57,18 @@ func ArgParse() *Args {
 	log.SetFlags(log.Ltime | log.Lshortfile) // ログの出力書式を設定する
 	ThisProgramPath = core.AbsPath(os.Args[0])
 
-	args := &Args{SettingPath: fmt.Sprintf("./%v", core.SettingFileName)}
+	args := &Args{
+		SettingPath: fmt.Sprintf("./%v", core.SettingFileName),
+		PlayerNames: []string{"You", "NPC1", "NPC2", "NPC3"},
+	}
 
 	{
 		var err error
-		parser, err = arg.NewParser(arg.Config{Program: filepath.Base(filepath.ToSlash(os.Args[0]))}, args)
+		parser, err = arg.NewParser(
+			arg.Config{
+				Program: filepath.Base(filepath.ToSlash(os.Args[0])),
+			},
+			args)
 		if err != nil {
 			panic(errors.Errorf("%v", err))
 		}
@@ -105,22 +111,6 @@ func ArgParse() *Args {
 		ShowHelp() // go-argsの生成するヘルプ文字列を取得して出力する。
 	}
 	return args
-}
-
-func ReadSetting(args *Args, s *core.Setting) *core.Setting {
-	tmp := &core.Setting{}
-	//log.Printf("setting : %v", args.SettingPath)
-	if b, err := os.ReadFile(args.SettingPath); err == nil {
-		// 設定ファイルがある。
-		if err := hjson.Unmarshal(b, tmp); err != nil {
-			// 設定ファイルの形式が正しくない。
-			log.Printf("設定ファイルの形式が不正です。")
-			panic(errors.Errorf("%v", err))
-		}
-	}
-	s = tmp
-	s.Print(args.SettingPath)
-	return s
 }
 
 func loggingSettings(logpath string, s *core.Setting) {

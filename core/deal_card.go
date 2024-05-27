@@ -61,6 +61,7 @@ func DealCards(player_id int, deal_num int, state *State) bool {
 }*/
 
 func DealCards(player_id int, deal_num int, state *State) bool {
+	state.DrawnCardID = []int{}
 	// deal_num回state.Deckからhandにカードを引く。
 	for j := 0; j < deal_num; j++ {
 		// 山札からカードを1枚引く。
@@ -73,6 +74,7 @@ func DealCards(player_id int, deal_num int, state *State) bool {
 			panic(errors.Errorf("%v", "バグ")) // 謎。バグ。
 		}
 		push(&state.Hands[player_id], card)
+		state.DrawnCardID = append(state.DrawnCardID, card.Type)
 	}
 	if Developing && Debug {
 		log.Printf("Dealed Cards : %#v", PrintCards(state.Hands[player_id]))
