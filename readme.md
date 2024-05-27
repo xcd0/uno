@@ -104,20 +104,20 @@
 
 予定。
 
-APIエンドポイント                | HTTPメソッド | 説明
----------------------------------|--------------|------------------------------------------------------------
-`/api/game/new`                  | POST         | 新しいゲームを開始し、セッションIDを発行します。
-`/api/game/{sessionId}/state`    | GET          | 指定されたセッションIDのゲーム状態を取得します。
-`/api/game/{sessionId}/play`     | POST         | 指定されたセッションIDのゲームにおいて、プレーヤーのアクションを処理します。
-`/api/game/{sessionId}/cards`    | GET          | ゲームで使用されるすべてのカードの詳細情報を取得します。
-`/api/players/register`          | POST         | 新しいプレイヤーを登録します。
-`/api/players/{playerId}`        | GET          | 指定されたプレイヤーIDに関する詳細情報を取得します。
-`/api/players/{playerId}/stats`  | GET          | プレイヤーの過去のゲーム成績や勝率などの統計情報を取得します。
-`/api/game/history/{sessionId}`  | GET          | 指定されたゲームセッションの履歴情報を取得します。
-`/api/game/replay/{sessionId}`   | GET          | ゲームのリプレイデータを提供し、ユーザーが過去のゲームをレビューできるようにします。
-`/api/notifications`             | POST         | ゲームに関連する特定の通知をユーザーに送信します。
-`/api/ws/{playerId}`             | WebSocket    | 参加中のゲームのリアルタイムイベント用webソケット。
-`/api/ws/subscribe/{playerId}`   | WebSocket    | プレイヤーがリアルタイムのゲームイベントを購読するためのWebSocket接続を提供します。
+APIエンドポイント                | HTTPメソッド | 実装 | 説明
+---------------------------------|--------------|------|------------------------------------------------------------
+`/api/game/new`                  | POST         | o    | 新しいゲームを開始し、セッションIDを発行します。
+`/api/game/{sessionId}/state`    | GET          | o    | 指定されたセッションIDのゲーム状態を取得します。
+`/api/game/{sessionId}/play`     | POST         | o    | 指定されたセッションIDのゲームにおいて、プレーヤーのアクションを処理します。
+`/api/game/{sessionId}/cards`    | GET          | o    | ゲームで使用されるすべてのカードの詳細情報を取得します。
+`/api/players/register`          | POST         | o    | 新しいプレイヤーを登録します。
+`/api/players/{playerId}`        | GET          | x    | 指定されたプレイヤーIDに関する詳細情報を取得します。
+`/api/players/{playerId}/stats`  | GET          | x    | プレイヤーの過去のゲーム成績や勝率などの統計情報を取得します。
+`/api/game/history/{sessionId}`  | GET          | x    | 指定されたゲームセッションの履歴情報を取得します。
+`/api/game/replay/{sessionId}`   | GET          | x    | ゲームのリプレイデータを提供し、ユーザーが過去のゲームをレビューできるようにします。
+`/api/notifications`             | POST         | x    | ゲームに関連する特定の通知をユーザーに送信します。
+`/api/ws/{playerId}`             | WebSocket    | o    | 参加中のゲームのリアルタイムイベント用webソケット。
+`/api/ws/subscribe/{playerId}`   | WebSocket    | x    | プレイヤーがリアルタイムのゲームイベントを購読するためのWebSocket接続を提供します。
 
 
 
