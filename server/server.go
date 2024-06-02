@@ -48,7 +48,10 @@ var playerStore = struct {
 	names   map[string]string // 名前のユニーク性を保持するためのマップ
 }{players: make(map[string]core.PlayerInfo), names: make(map[string]string)}
 
-func UnoServer(state *core.State) {
+func UnoServer(state *core.State, wg *sync.WaitGroup) {
+	log.Printf("UnoServer: wake up")
+	wg.Add(1)
+	defer wg.Done()
 	rule := state.Rule
 	port := state.Setting.Port
 	//yourname := "You"
@@ -57,7 +60,7 @@ func UnoServer(state *core.State) {
 	state.Players = []string{}
 
 	// DBを開く。
-	db, err := core.OpenOrCreateDatabase(core.UnoDBPath)
+	db, err := core.OpenOrCreateDatabase(core.UnoServerDBPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -263,6 +266,7 @@ func UnoServer(state *core.State) {
 	// if err := http.ListenAndServe(fmt.Sprintf(":%v", port), nil); err != nil {
 	// 	log.Fatal("ListenAndServe: ", err)
 	// }
+	log.Printf("UnoServer: listen localhost:%v", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), router))
 }
 
@@ -336,7 +340,7 @@ func HandleRegisterPlayer(w http.ResponseWriter, r *http.Request) {
 	playerStore.names[newPlayer.Name] = playerId
 
 	// Open a connection to the SQLite3 database
-	db, err := sql.Open("sqlite3", "./user.db")
+	db, err := sql.Open("sqlite3", "./server.db")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -83,7 +83,7 @@ func OpenOrCreateDatabase(path string) (*sql.DB, error) {
 
 func db_example() {
 
-	db, err := OpenOrCreateDatabase(UnoDBPath)
+	db, err := OpenOrCreateDatabase(UnoServerDBPath)
 	if err != nil {
 		log.Fatal(err)
 	}

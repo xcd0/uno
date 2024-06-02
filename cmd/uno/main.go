@@ -5,6 +5,7 @@ import (
 	"io"
 	math_rand "math/rand"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -50,9 +51,6 @@ func Run(args *Args) {
 	state.DealHandsOnInit()
 
 	if !true {
-		// TUIクライアントとりあえず実装。
-		client.Tui()
-	} else if !true {
 		// とりあえず実装。
 		GameStart(state)
 		return
@@ -69,17 +67,18 @@ func Run(args *Args) {
 			}
 			state.Setting = &setting
 		}
+		var wg sync.WaitGroup
 
 		switch {
 		case args.ArgsServer != nil: // サーバーモードとして起動する。
-			server.UnoServer(state)
+			server.UnoServer(state, &wg)
 		case args.ArgsClient != nil: // クライアントモードとして起動する。
 			client.UnoClient(state.Setting.Port)
 		case args.ArgsServerClient != nil: // サーバーとクライアント同時に起動する。
-			go server.UnoServer(state)
+			go server.UnoServer(state, &wg)
 			client.UnoClient(state.Setting.Port)
 		case args.ArgsSolo != nil: // 一人プレイモードで起動する。
-			go server.UnoServer(state)
+			go server.UnoServer(state, &wg)
 			client.UnoClient(state.Setting.Port)
 		case args.CreateEmptyHjson != nil: // 空の設定ファイルを生成する。
 		// TODO: 実装
@@ -91,9 +90,12 @@ func Run(args *Args) {
 			//fmt.Printf("%s", "説明文を書く?")
 			// TODO: 実装
 		}
+		wg.Wait()
 		return
 	}
 }
+
+//aa
 
 func GameStart(state *core.State) {
 

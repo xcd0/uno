@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -561,4 +562,10 @@ func RandomSign() int {
 		return -1
 	}
 	return 1
+}
+
+func FuncName() string {
+	pc, _, _, _ := runtime.Caller(1)
+	funcName := runtime.FuncForPC(pc).Name()
+	return funcName
 }

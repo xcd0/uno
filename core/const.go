@@ -5,5 +5,6 @@ const (
 	Developing = false
 
 	SettingFileName = "uno_setting.hjson" // 設定ファイル名。
-	UnoDBPath       = "./uno_user.db"
+	UnoServerDBPath = "./uno_user.db"
+	UnoUserDBPath   = "./uno_user.db"
 )
