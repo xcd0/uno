@@ -65,7 +65,7 @@ type JsonCardInfo struct {
 	CardAll []Card `json:"card_info"`
 }
 
-func (jci *JsonCardInfo) Init(rule UnoRule) JsonCardInfo {
+func (jci *JsonCardInfo) Init(rule *UnoRule) JsonCardInfo {
 	jci.CardAll = GetCards(rule)
 	return *jci
 }

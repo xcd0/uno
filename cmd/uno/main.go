@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	math_rand "math/rand"
 	"os"
 	"sync"
@@ -20,8 +19,6 @@ var (
 	revision        string
 	ThisProgramPath string // $0の絶対パスを入れる
 	CurrentPath     string // 起動時のカレントディレクトリ
-	wrapperStdout   io.Writer
-	wrapperStderr   io.Writer
 	logfile         *os.File
 )
 
@@ -44,7 +41,6 @@ func Run(args *Args) {
 	state := core.NewState(
 		args.PlayerNames,
 		args.NumberOfPlayers,
-		core.GetCards(rule),
 		&rule,
 	)
 	state.ShuffleDeck()
@@ -60,7 +56,7 @@ func Run(args *Args) {
 
 		{
 			setting := core.ReadSetting(args.SettingPath, core.NewSetting())
-			loggingSettings(args.LogPath, &setting)
+			core.LoggingSettings(args.LogPath, &setting)
 			if args.CreateEmptyHjson != nil {
 				core.CreateEmptyHjson()
 				os.Exit(0)

@@ -29,8 +29,8 @@ type State struct {
 	UnoCalled      []bool   // 他プレイヤーがUNO!とコールしたかどうかリスト。
 }
 
-func NewState(players []string, numberOfPlayers int, cards []Card, rule *UnoRule) *State {
-	return (&State{}).Init(players, numberOfPlayers, cards, rule)
+func NewState(players []string, numberOfPlayers int, rule *UnoRule) *State {
+	return (&State{}).Init(players, numberOfPlayers, GetCards(rule), rule)
 }
 
 func (state State) Init(players []string, numberOfPlayers int, cards []Card, rule *UnoRule) *State {

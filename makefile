@@ -34,6 +34,9 @@ test-register:
 	rm resp.log
 	cat test.log
 
+test-server:
+	go test ./server/
+
 test-run-server:
 	make build
 	$(BUILDDIR)/uno$(EXE) server > test_server.log 2>&1 & echo "PID: $$!" > test_pid.log;

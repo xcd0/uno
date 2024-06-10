@@ -2,7 +2,7 @@ package core
 
 import "log"
 
-func GetCards(rule UnoRule) []Card {
+func GetCards(rule *UnoRule) []Card {
 	ci := CardInfo{}
 	ci.Init()
 

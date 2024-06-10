@@ -48,6 +48,14 @@ var playerStore = struct {
 	names   map[string]string // 名前のユニーク性を保持するためのマップ
 }{players: make(map[string]core.PlayerInfo), names: make(map[string]string)}
 
+var (
+	HandleNewGame    func(w http.ResponseWriter, r *http.Request)
+	HandleGameState  func(w http.ResponseWriter, r *http.Request)
+	HandleClientPlay func(w http.ResponseWriter, r *http.Request)
+	HandleCards      func(w http.ResponseWriter, r *http.Request)
+	HandleWebSocket  func(w http.ResponseWriter, r *http.Request)
+)
+
 func UnoServer(state *core.State, wg *sync.WaitGroup) {
 	log.Printf("UnoServer: wake up")
 	wg.Add(1)
@@ -55,7 +63,7 @@ func UnoServer(state *core.State, wg *sync.WaitGroup) {
 	rule := state.Rule
 	port := state.Setting.Port
 	//yourname := "You"
-	cards := (&core.JsonCardInfo{}).Init(rule)
+	cards := (&core.JsonCardInfo{}).Init(&rule)
 
 	state.Players = []string{}
 
@@ -71,7 +79,7 @@ func UnoServer(state *core.State, wg *sync.WaitGroup) {
 
 	//log.Printf("%v", state.Setting.Print())
 
-	HandleNewGame := func(w http.ResponseWriter, r *http.Request) {
+	HandleNewGame = func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
@@ -132,7 +140,7 @@ func UnoServer(state *core.State, wg *sync.WaitGroup) {
 	}
 
 	// HandleGameStateは現在の状態をクライアントに送信するためのGETリクエストを処理します。
-	HandleGameState := func(w http.ResponseWriter, r *http.Request) {
+	HandleGameState = func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
@@ -171,7 +179,7 @@ func UnoServer(state *core.State, wg *sync.WaitGroup) {
 	}
 
 	// HandleClientPlayは、クライアントがプレイを送信するPOSTリクエストを処理します。
-	HandleClientPlay := func(w http.ResponseWriter, r *http.Request) {
+	HandleClientPlay = func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
@@ -210,17 +218,17 @@ func UnoServer(state *core.State, wg *sync.WaitGroup) {
 
 	// HandleCardsはすべてのカードのリストを送信するためのGETリクエストを処理します。
 	// ruleを引数渡しできないため、クロージャとしてハンドラーを定義する。
-	HandleCards := func(w http.ResponseWriter, r *http.Request) {
+	HandleCards = func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
 		}
-		//cards := (&core.JsonCardInfo{}).Init(rule)
+		//cards := (&core.JsonCardInfo{}).Init(&rule)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(cards)
 	}
 
-	HandleWebSocket := func(w http.ResponseWriter, r *http.Request) {
+	HandleWebSocket = func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		playerID := vars["playerId"]
 		conn, err := upgrader.Upgrade(w, r, nil)

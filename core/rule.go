@@ -199,7 +199,7 @@ type UnoRule struct {
 	AllowWinWithoutUnoOnSimultaneous bool `json:"allow_win_without_uno_on_simultaneous" comment:"R.house-jp.07 同時出しルールが許可されている状態で、UNOコールなしで上がることを許可" default:"false"`
 }
 
-func (rule *UnoRule) Init() UnoRule {
+func (rule *UnoRule) Init() *UnoRule {
 	// 公式ルール。
 	rule.NumberOfPlayer = 4 // R.official.01 人数は2-10人程度を許容。4-6人を最適とする。
 
@@ -210,14 +210,15 @@ func (rule *UnoRule) Init() UnoRule {
 	// 書いていないが公式ルール
 	// ドロー4にドロー4が重ねられたときチャレンジを禁止する。そもそも重ねられない。重ねられる場合ドロー2→ドロー4の時のみのルール。このルールはカスタマイズできなくてよいと思われる。
 
-	return *rule
+	return rule
 }
 
-func (ur *UnoRule) SetRule(rule string) {
+func (ur *UnoRule) SetRule(rule string) *UnoRule {
 
 	switch rule {
 	case "official": // 公式ルール。
-		*ur = (&UnoRule{}).Init() // 全て初期化する。
+		ur = &UnoRule{} // 全て初期化する。
+		ur = ur.Init()  // 全て初期化する。
 	case "official_new": // シャッフルワイルドあり。
 		ur.SetRule("official")       // 公式ルールをベースにする。
 		ur.ShuffleWildExtraCount = 1 // R.official.02 シャッフルワイルドカードの追加枚数
@@ -298,6 +299,7 @@ func (ur *UnoRule) SetRule(rule string) {
 	case "custom2": // ユーザーが好きにカスタマイズできるルール。追加してもよい。
 		ur.UserCustumRule(2)
 	}
+	return ur
 }
 
 func (ur *UnoRule) UserCustumRule(num int) {

@@ -160,8 +160,8 @@ func CreateEmptyHjson() string {
 	return sb
 }
 
-func NewSetting() Setting {
-	return Setting{
+func NewSetting() *Setting {
+	return &Setting{
 		LogPath:     "",
 		Silent:      false,
 		RuleToApply: "official_new",
@@ -186,10 +186,10 @@ func (s *Setting) Print() string {
 	)
 }
 
-func ReadSetting(setting_path string, s Setting) Setting {
+func ReadSetting(setting_path string, s *Setting) *Setting {
 	if b, err := os.ReadFile(setting_path); err == nil {
 		// 設定ファイルがある。
-		if err := hjson.Unmarshal(b, s); err != nil {
+		if err := hjson.Unmarshal(b, *s); err != nil {
 			// 設定ファイルの形式が正しくない。
 			log.Printf("設定ファイルの形式が不正です。")
 			panic(errors.Errorf("%v", err))
